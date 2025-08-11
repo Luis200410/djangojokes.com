@@ -13,4 +13,5 @@ urlpatterns = [
     path('jobs/', include('jobs.urls')),
     path('jokes/', include('jokes.urls')),
     path('', include('pages.urls')),
+    path('account/', include('users.urls')),
 ]
