@@ -34,15 +34,15 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     # Built-in Django apps
     'django.contrib.admin',
+    'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.staticfiles',
-    'django.contrib.admindocs',
     'django.contrib.messages',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
 
-    # Third-party apps
+    # Third-party
     'crispy_forms',
     'crispy_bootstrap5',
     'allauth',
@@ -51,11 +51,10 @@ INSTALLED_APPS = [
 
     # Local apps
     'common.apps.CommonConfig',
+    'jobs.apps.JobsConfig',
     'jokes.apps.JokesConfig',
     'pages.apps.PagesConfig',
     'users.apps.UsersConfig',
-    'jobs.apps.JobsConfig',
-    'storages',
 ]
 
 SITE_ID = 1
@@ -83,6 +82,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -197,19 +197,6 @@ MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-
-if os.environ.get('ENVIRONMENT') == 'production':
-    STATICFILES_STORAGE = 'djangojokes.storage_backends.StaticStorage'
-    STATIC_ROOT = 'static'  # This is optional; S3 handles it
-else:
-    STATIC_URL = '/static/'
-    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # BOTTOM OF settings.py
 if os.environ.get('ENVIRONMENT') != 'production':
