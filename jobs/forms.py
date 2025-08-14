@@ -45,7 +45,7 @@ class JobApplicationForm(forms.ModelForm):
             ),
             'start_date': forms.SelectDateWidget(
                 attrs = {
-                    'style': 'width: 21%; display: inline-block; margin: 0 1%'
+                    'style': 'width: 31%; display: inline-block; margin: 0 1%'
                 },
                 years = range(datetime.now().year, datetime.now().year+2)
             ),
@@ -55,7 +55,6 @@ class JobApplicationForm(forms.ModelForm):
             'cover_letter': forms.Textarea(attrs={'cols': '100', 'rows': '5'}),
             'resume': forms.FileInput(attrs={'accept':'application/pdf'})
         }
-
         error_messages = {
             'start_date': {
                 'past_date': 'Please enter a future date.'
