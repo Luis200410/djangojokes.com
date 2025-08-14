@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'private_storage',
 
     # Local apps
     'common.apps.CommonConfig',
@@ -56,6 +55,7 @@ INSTALLED_APPS = [
     'pages.apps.PagesConfig',
     'users.apps.UsersConfig',
     'jobs.apps.JobsConfig',
+    'storages',
 ]
 
 SITE_ID = 1
@@ -172,20 +172,39 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+# https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = '/static/'
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'djangojokesluis' # REPLACE WITH YOUR BUCKET NAME
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_DEFAULT_ACL = None # Use S3 bucket's setting
+
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+AWS_S3_REGION_NAME = 'us-east-1'  # REPLACE WITH YOUR BUCKET REGION
+
+STATICFILES_STORAGE = 'djangojokes.storage_backends.StaticStorage'
+DEFAULT_FILE_STORAGE = 'djangojokes.storage_backends.PublicMediaStorage'
+PRIVATE_FILE_STORAGE = 'djangojokes.storage_backends.PrivateMediaStorage'
+
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-# private-storage settings
-PRIVATE_STORAGE_ROOT = MEDIA_ROOT / 'private/'
-PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_staff'
+if os.environ.get('ENVIRONMENT') == 'production':
+    STATICFILES_STORAGE = 'djangojokes.storage_backends.StaticStorage'
+    STATIC_ROOT = 'static'  # This is optional; S3 handles it
+else:
+    STATIC_URL = '/static/'
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
