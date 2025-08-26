@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from common.utils.text import unique_slug
 
-from django.db.models import Avg
+from django.db.models import Avg, Count, Sum
 
 class Category(models.Model):
     category = models.CharField(max_length=50)
@@ -46,26 +46,24 @@ class Joke(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     @property
-    def num_votes(self):
-        return self.jokevotes.count()
+    def votes(self):
+        result = JokeVote.objects.filter(joke=self).aggregate(
+            num_votes=Count('vote'),
+            sum_votes=Sum('vote')
+        )
 
-    @property
-    def num_likes(self):
-        return self.jokevotes.filter(vote=1).count()
+        # If there aren’t any votes yet, return a dictionary with values of 0.
+        if result['num_votes'] == 0:
+            return {'num_votes': 0, 'rating': 0, 'likes': 0, 'dislikes': 0}
 
-    @property
-    def num_dislikes(self):
-        return self.jokevotes.filter(vote=-1).count()
-    
-    @property
-    def rating(self):
-        if self.num_votes == 0: # No jokes, so rating is 0
-            return 0
+        # Otherwise, calculate the dict values using num_votes and sum_votes.
+        result['rating'] = round(
+            5 + ((result['sum_votes']/result['num_votes'])*5), 2
+        )
+        result['dislikes'] = int((result['num_votes'] - result['sum_votes'])/2)
+        result['likes'] = result['num_votes'] - result['dislikes']
 
-        r = JokeVote.objects.filter(joke=self).aggregate(average=Avg('vote'))
-
-        # Return the rounded rating.
-        return round(5 + (r['average'] * 5), 2)
+        return result
 
     def get_absolute_url(self):
         return reverse('jokes:detail', args=[self.slug])
